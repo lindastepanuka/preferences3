@@ -11,7 +11,13 @@ module Preferences3
       @type = args.first ? args.first.to_sym : :boolean
 
       # Create a column that will be responsible for typecasting
-      @column = ActiveRecord::ConnectionAdapters::Column.new(name.to_s, options[:default], @type == :any ? nil : @type.to_s)
+      sql_type = @type == :any ? nil : @type.to_s
+      @column = ActiveRecord::ConnectionAdapters::Column.new(
+        name.to_s,
+        options[:default],
+        column_cast_type(sql_type).new,
+        sql_type
+      )
 
       @group_defaults = (options[:group_defaults] || {}).inject({}) do |defaults, (group, default)|
         defaults[group.is_a?(Symbol) ? group.to_s : group] = type_cast(default)
@@ -50,6 +56,17 @@ module Preferences3
         !value.zero?
       else
         !value.blank?
+      end
+    end
+
+    private
+
+    def column_cast_type(sql_type)
+      case sql_type
+      when :string then ActiveRecord::Type::String
+      when :integer then ActiveRecord::Type::Integer
+      when :boolean then ActiveRecord::Type::Boolean
+      else ActiveRecord::Type::String
       end
     end
   end
