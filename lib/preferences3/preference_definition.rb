@@ -39,7 +39,7 @@ module Preferences3
     # This uses ActiveRecord's typecast functionality so the same rules for
     # typecasting a model's columns apply here.
     def type_cast(value)
-      @type == :any ? value : @column.type_cast(value)
+      @type == :any ? value : @column.type_cast_from_database(value)
     end
 
     # Typecasts the value to true/false depending on the type of preference
